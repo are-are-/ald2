@@ -1,0 +1,60 @@
+{
+  function r(t, v, a) {
+    return [t, v, a];
+  }
+}
+
+
+Command
+  = _? cmd:Argument _? args:Arguments? _? {
+    return r("command", cmd, args || []);
+}
+
+Arguments
+  = arg:Argument _ args:Arguments { return [arg].concat(args); }
+    / arg:Argument { return [arg]; }
+
+Argument
+  = "(" _? cmd:Command _? ")" { return cmd; }
+  / "\"" str:[^"]* "\"" { return r("string", str.join("")); }
+  / "'" str:[^']* "'" { return r("string", str.join("")); }
+  / int:DecimalLiteral { return r("number", int); }
+  / arg:Identifier { return r("symbol", arg); }
+
+Identifier = head:[a-zA-Z] tail:[a-zA-Z_0-9]* { 
+  return head + tail.join("");
+}
+
+DecimalLiteral
+  = DecimalIntegerLiteral "." DecimalDigit* ExponentPart? {
+      return parseFloat(text());
+    }
+  / "." DecimalDigit+ ExponentPart? {
+      return parseFloat(text());
+    }
+  / DecimalIntegerLiteral ExponentPart? {
+      return parseFloat(text());
+    }
+
+DecimalIntegerLiteral
+  = "0"
+  / NonZeroDigit DecimalDigit*
+
+DecimalDigit
+  = [0-9]
+
+NonZeroDigit
+  = [1-9]
+
+ExponentPart
+  = ExponentIndicator SignedInteger
+
+ExponentIndicator
+  = "e"i
+
+SignedInteger
+  = [+-]? DecimalDigit+
+
+_ = [ \t\r\n]+ {
+  return undefined;
+}

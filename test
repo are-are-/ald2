@@ -1,0 +1,9 @@
+(fn x
+	(if (lte x 2)
+    1
+    (plus
+      (self (minus x 1)) 
+      (self (minus x 2))
+    )
+  )
+) 5
